@@ -1,9 +1,3 @@
-station_cfg={}
-station_cfg.ssid="LEDE"
-station_cfg.pwd="rockyrocky"
-station_cfg.save=true
-wifi.setmode(wifi.STATION)
-wifi.sta.config(station_cfg)
 -- wifi.sta.connect()
 tmr.alarm(1, 1000, 1, function()
   drawn = false
@@ -11,7 +5,6 @@ tmr.alarm(1, 1000, 1, function()
     if not drawn then
       disp:firstPage()
       repeat
-        drawWatch()	
         disp:drawStr(0, 11, "connecting")
       until disp:nextPage() == false
       drawn = true
@@ -25,9 +18,24 @@ tmr.alarm(1, 1000, 1, function()
     else
             disp:setContrast(128)
     end
-    disp:firstPage()
-    repeat
-      drawTime(string.format("%04d/%02d/%02d %02d:%02d:%02d", tm["year"], tm["mon"], tm["day"], tm["hour"], tm["min"], tm["sec"]))
-    until disp:nextPage() == false
+
+    time=string.format("%04d/%02d/%02d %02d:%02d:%02d", tm["year"], tm["mon"], tm["day"], tm["hour"], tm["min"], tm["sec"])
+
+    -- DHT 22
+    -- pin = 2
+    -- status, temp, humi, temp_dec, humi_dec = dht.read(pin)
+    -- if status == dht.OK then
+    --         draw(nil,0,10,
+    --             string.format("Temp:%d.%03d ℃ ;Humidity:%d.%03d%\r\n", math.floor(temp), temp_dec, math.floor(humi), humi_dec)
+    --             )
+    --         -- print("DHT Temperature:"..temp..";".."Humidity:"..humi)
+    -- elseif status == dht.ERROR_CHECKSUM then
+    --         print( "DHT Checksum error." )
+    -- elseif status == dht.ERROR_TIMEOUT then
+    --         print( "DHT timed out." )
+    -- end
+    draw()
+            
+
   end
 end)
