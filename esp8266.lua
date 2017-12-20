@@ -13,8 +13,8 @@ sntp_timer = tmr.create()
 function init_i2c_display()
 --    SDA and SCL can be assigned freely to available GPIOs
     local id  = 0
-    local sda = 4 --16
-    local scl = 3 --17
+    local sda = 3 --16
+    local scl = 4 --17
     local sla = 0x3c
     local sla1 = 0x3d
     i2c.setup(id, sda, scl, i2c.SLOW)
@@ -41,8 +41,8 @@ function draw()
     disp:setFontPosTop()
     disp:drawUTF8(0, 9, "室温:")
     disp:drawUTF8(0, 38, "设定:")
-    disp:drawUTF8(108, 9, "℃")
-    disp:drawUTF8(108, 38, "℃")
+    disp:drawUTF8(110,9, "℃")
+    disp:drawUTF8(110,38, "℃")
     disp:drawUTF8(0, 51, "测试测试测试℃")
     disp:setFont(u8g2.font_freedoomr25_mn)
     disp:setFontPosTop()
@@ -55,7 +55,9 @@ function draw()
     disp1:setFont(u8g2.font_wqy13_t_gb2312b)
     disp1:setFontPosTop()
     disp1:drawUTF8(0, 1, date)
-    disp1:drawUTF8(0, 15, time)
+    disp1:setFont(u8g2.font_freedoomr25_mn)
+    disp1:setFontPosTop()
+    disp1:drawUTF8(0, 13, time)
     disp1:sendBuffer()
 end
 function init_wifi()
@@ -100,9 +102,13 @@ ud_timer:register(1000, tmr.ALARM_AUTO, function()
     end
     local wd=tm['wday']
     if tm["year"] > 2016 then
-      date=string.format("%02d年%02d月%02d日",tm["year"], tm["mon"], tm["day"])
-      time=string.format("%02d点%02d分%02d秒周"..week_day[wd],tm["hour"], tm["min"], tm["sec"])
-      print(time)
+      date=string.format("%02d年%02d月%02d日周"..week_day[wd], tm['year'], tm['mon'],tm['day'])
+     
+      if tm['sec']%2 == 0 then
+        time=string.format("%02d:%02d",tm['hour'], tm['min'])
+      else
+        time=string.format("%02d %02d",tm['hour'],tm['min'])
+      end
     end
     --print("in timer")
     draw()
