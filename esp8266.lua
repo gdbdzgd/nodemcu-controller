@@ -1,11 +1,12 @@
 -- writen by gdzhang for init oled
 Temp="00.0"
+STemp="00.0"
 Humidity="00.0"
 time="获取中.."
 date="获取中.."
 tm=nil
 week_day={"日","一","二","三","四","五","六"}
-run_sntp_flag=1
+
 ud_timer = tmr.create()
 
 sntp_timer = tmr.create()
@@ -47,17 +48,20 @@ function draw()
     disp:setFont(u8g2.font_freedoomr25_mn)
     disp:setFontPosTop()
     disp:drawStr(35,0,Temp)
-    disp:drawStr(35,25,Humidity)
+    disp:drawStr(35,25,STemp)
     disp:sendBuffer()
     disp1:clearBuffer()
 -- disp1:drawUTF8(0,0,"测试")
 --   disp1:sendBuffer()
     disp1:setFont(u8g2.font_wqy13_t_gb2312b)
     disp1:setFontPosTop()
-    disp1:drawUTF8(0, 1, date)
+    disp1:drawUTF8(0, 0, date)
+    disp1:drawUTF8(0, 51, "湿度:")
     disp1:setFont(u8g2.font_freedoomr25_mn)
     disp1:setFontPosTop()
-    disp1:drawUTF8(0, 13, time)
+    disp1:drawUTF8(10, 13, time)
+    disp1:drawUTF8(35, 39, Humidity)
+
     disp1:sendBuffer()
 end
 function init_wifi()
@@ -79,15 +83,24 @@ sntp_timer:register(10000,tmr.ALARM_AUTO,function()
   if tm["year"] <= 2016 then
     sntp.sync("0.pool.ntp.org",
       function(sec, usec, server,info)
-        print('sync ok',sec,usec,server)
-        print("unregister sntp timer")
-        -- run_sntp_flag=0
+        print('sync ok',sec,usec,server)        -- run_sntp_flag=0
       end,
       function()
         print('sntp sync faild, will try next 10s')
       end,
       1)
   end
+  local dh22_pin = 1
+  local status, temp, humi, temp_dec, humi_dec = dht.read(dh22_pin)
+  if status == dht.OK then
+    Humidity = string.format("%0.1f",math.floor(humi))
+    Temp = string.format("%0.1f",math.floor(temp))
+  elseif status == dht.ERROR_CHECKSUM then
+        Humidity="DHT Checksum error"
+  elseif status == dht.ERROR_TIMEOUT then
+        Temp="DHT timed out"
+  end
+
 end
 )
 
