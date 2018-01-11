@@ -51,8 +51,13 @@ function w.receiver(sck, data)
     response[#response + 1] = Temp
     response[#response + 1] = '</h1><h1>湿度：'
     response[#response + 1] = Humidity
-    
-    response[#response + 1] = '</h1></body>'
+    response[#response + 1] = '</h1>'
+    response[#response + 1] = '<form action="/">
+      温度设定: <input type="number" name="tem_set" /><br />
+          <input type="submit" value="提交" />
+          </form>
+         '
+    response[#response + 1] = '</body>'
   end
   
   -- sends and removes the first element from the 'response' table
