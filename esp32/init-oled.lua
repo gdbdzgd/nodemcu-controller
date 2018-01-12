@@ -5,7 +5,7 @@ Humidity="00.0"
 time="获取中.."
 date="获取中.."
 tm=nil
-status="off"
+gas_sta=""
 temp_set=0
 temp_set_effect=0
 week_day={"日","一","二","三","四","五","六"}
@@ -13,12 +13,12 @@ ud_timer = tmr.create()
 sntp_timer = tmr.create()
 function init_i2c_display()
 --    SDA and SCL can be assigned freely to available GPIOs
-    local id  = 0
+    local id  = i2c.HW0
     local sda = 21 --16
     local scl = 22 --17
     local sla = 0x3c
     local sla1 = 0x3d
-    i2c.setup(id, sda, scl, i2c.SLOW)
+    i2c.setup(id, sda, scl, i2c.FAST)
     disp = u8g2.sh1106_i2c_128x64_noname(id, sla)
     disp1 = u8g2.sh1106_i2c_128x64_noname(id, sla1)
 end
