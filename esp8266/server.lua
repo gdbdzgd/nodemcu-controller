@@ -3,8 +3,6 @@ print(wifi.sta.getip())
 station_cfg={}
 station_cfg.ssid="LEDE"
 station_cfg.pwd="rockyrocky"
-
-
 wifi.setmode(wifi.STATION)
 wifi.sta.config(station_cfg)
 print(wifi.sta.getip())
@@ -21,18 +19,13 @@ tmr.alarm(0, 1000, 1, function()
       tmr.stop(0)
    end
 end)
-
 pin=0
 gpio.mode(0,gpio.OUTPUT)
-
 -- gpio.write(0,gpio.HIGH)
 -- tmr.delay(1000000)
 -- gpio.write(0,gpio.LOW)
 -- tmr.delay(1000000)
-
-
 -- Connect 
-
  -- Start a simple http server
 srv=net.createServer(net.TCP)
 srv:listen(80,function(conn)
@@ -41,11 +34,11 @@ srv:listen(80,function(conn)
     if string.find(data, '^on') then
       gpio.write(pin,gpio.HIGH)
       print("open the Gas fireplaces")
-      conn:close()
+      conn:send('on')
     elseif string.find(data, '^off') then
       gpio.write(pin,gpio.LOW)
       print("colse the Gas fireplaces")
-      conn:close()
+      conn:send('off')
     elseif string.find(data, '^status') then
       stat=gpio.read(pin)
       print("status"..pin..":"..stat)
@@ -57,13 +50,7 @@ srv:listen(80,function(conn)
     else
       conn:close()
     end
-    -- conn:send(gpio.read(pin))
-    
-    -- conn:close()
   end)
   conn:on("sent",function(conn) conn:close() end)
 end)
-
-
-
 
