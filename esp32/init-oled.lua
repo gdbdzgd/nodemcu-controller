@@ -5,14 +5,16 @@ Humidity="00.0"
 time="获取中.."
 date="获取中.."
 tm=nil
-gas_sta=""
-temp_set=0
-temp_set_effect=0
+gas_sta="null"
+temp_set_effect="否"
+
+hostip=""
+require("gas-controll")
 week_day={"日","一","二","三","四","五","六"}
 ud_timer = tmr.create()
 sntp_timer = tmr.create()
 function init_i2c_display()
---    SDA and SCL can be assigned freely to available GPIOs
+    --    SDA and SCL can be assigned freely to available GPIOs
     local id  = i2c.HW0
     local sda = 21 --16
     local scl = 22 --17
@@ -51,8 +53,8 @@ function draw()
     disp:drawStr(35,25,STemp)
     disp:sendBuffer()
     disp1:clearBuffer()
--- disp1:drawUTF8(0,0,"测试")
---   disp1:sendBuffer()
+    -- disp1:drawUTF8(0,0,"测试")
+    --   disp1:sendBuffer()
     disp1:setFont(u8g2.font_wqy12_t_gb2312b)
     disp1:setFontPosTop()
     disp1:drawUTF8(0, 0, date)
@@ -64,50 +66,52 @@ function draw()
     disp1:drawUTF8(35, 39, Humidity)
     disp1:sendBuffer()
 end
+
 function init_wifi()
- wf = require("esp32_wifi")
-wf.on("connection", function(info)
-  print("Got wifi. IP:", info.ip, "Netmask:", info.netmask, "GW:", info.gw)
-end)
-wf.on("disconnection", function()
-  print("Disconnected from Wifi. Should get auto-reconnect.")
-end)
-wf.init()
-            
+    wf = require("esp32_wifi")
+    wf.on("connection", function(info)
+        hostip=info.ip
+        print("Got wifi. IP:", info.ip, "Netmask:", info.netmask, "GW:", info.gw)
+    end)
+    wf.on("disconnection", function()
+        print("Disconnected from Wifi. Should get auto-reconnect.")
+    end)
+    wf.init()
 end
 sntp_timer:register(10000,tmr.ALARM_AUTO,function()
-  local dh22_pin = 0
-  local status, temp, humi, temp_dec, humi_dec = dht.read2x(dh22_pin)
-  if status == dht.OK then
-    Humidity = string.format("%0.1f",math.floor(humi))
-    Temp = string.format("%0.1f",math.floor(temp))
-  elseif status == dht.ERROR_CHECKSUM then
+    local dh22_pin = 0
+    local status, temp, humi, temp_dec, humi_dec = dht.read2x(dh22_pin)
+    if status == dht.OK then
+        Humidity = string.format("%0.1f",math.floor(humi))
+        Temp = string.format("%0.1f",math.floor(temp))
+    elseif status == dht.ERROR_CHECKSUM then
         Humidity="DHT Checksum error"
-  elseif status == dht.ERROR_TIMEOUT then
+    elseif status == dht.ERROR_TIMEOUT then
         Temp="DHT timed out"
-  end
-end
-)
+    end
+    get_gas_status()
+end)
 ud_timer:register(1000, tmr.ALARM_AUTO, function()
     tm = rtctime.epoch2cal(rtctime.get()+28800)
     if ( tm["hour"] >= 0 and tm ["hour"] <= 6 ) or ( tm["hour"] >= 20 and tm ["hour"] <= 24 ) then
-      disp:setContrast(0)
+        disp:setContrast(0)
+        disp1:setContrast(0)
     else
-      disp:setContrast(128)
+        disp:setContrast(128)
+        disp1:setContrast(128)
     end
     local wd=tm['wday'] 
     if tm["year"] > 2016 then
-      date=string.format("%02d年%02d月%02d日周"..week_day[wd], tm['year'], tm['mon'],tm['day'])
-     
-      if tm['sec']%2 == 0 then
-        time=string.format("%02d:%02d",tm['hour'], tm['min'])
-      else
-        time=string.format("%02d %02d",tm['hour'],tm['min'])
-      end
+        date=string.format("%02d年%02d月%02d日周"..week_day[wd], tm['year'], tm['mon'],tm['day'])
+        if tm['sec']%2 == 0 then
+            time=string.format("%02d:%02d",tm['hour'], tm['min'])
+        else
+            time=string.format("%02d %02d",tm['hour'],tm['min'])
+        end
     end
     --print("in timer")
     draw()
-  end)
+end)
 init_wifi()
 print("i2c init display")
 ud_timer:start()
@@ -118,3 +122,4 @@ ud_timer:start()
 sntp_timer:start()
 sntp.sync(nil)
 -- draw()
+
