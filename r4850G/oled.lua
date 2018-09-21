@@ -1,5 +1,5 @@
 require("menu")
-DEGREE=U8G2_R0
+require("rotary-encoder")
 
 function init_i2c_display()
     --    SDA and SCL can be assigned freely to available GPIOs
@@ -19,32 +19,52 @@ function u8g2_prepare()
     disp:setFontPosTop()
     disp:setFontDirection(0)
 end
-Temp=1
-data=1
-time=1
-Humidity=1
-STemp=1
-date=0
-offset=0
-menupostion=1
+
+offset=14
 function draw()
     disp:clearBuffer()
     disp:setFont(u8g2.font_wqy12_t_gb2312b)
     disp:setDisplayRotation(u8g2.R3);
     disp:setFontPosTop()
-    --disp:drawUTF8(0, 51, "测试测试测试℃")
-    for i=1,#menu do
-         --disp.drawUTF8(0,0+offset,menu[i].text)
-        if i == menupostion
-        then
-            
+
+    showstart=1
+    sm_len=#sm
+    if DEBUG then 
+        print("sm[0].text"..sm[0].text)
+        print("postion:"..sm[0].postion)
+        print("start:  "..showstart)
+        print("end:    "..sm_len)
+    end
+    if max_row < #sm then
+        page=math.ceil(sm[0].postion/max_row)
+        showstart=(page*max_row)
+    end
+    if DEBUG then 
+        print("postion:"..sm[0].postion)
+        print("showstart:  "..showstart)
+        print("showend:    "..sm_len)
+        print("page:    "..page)
+    end
+    print(sm[0].text)
+    disp:drawUTF8(1, 1+offset, sm[0].text)
+    offset=offset+14
+    ioff=showstart
+    for i=1,max_row do
+        index=i+(page-1)*max_row
+        if index > sm_len then break end
+        if index == sm[0].postion then 
             disp.drawBox(disp,0,1+offset,64,14);
             disp:setFontMode(0)
             disp:setDrawColor(0)
-            
+            --print("●")
         end
-        
-        disp:drawUTF8(1, 1+offset, i..menu[i].text)
+
+        disp:drawUTF8(1, 1+offset, index .."."..sm[index].text)
+        if index == sm[0].postion then
+            print("●"..index.."."..sm[index].text)
+        else
+            print(index.."."..sm[index].text)
+        end
         disp:setFontMode(0)
         disp:setDrawColor(1)
         offset=offset+14
@@ -67,4 +87,4 @@ while math.abs(usec-ousec)< 200000 do
 end
 gpio.write(18, 1)
 init_i2c_display()
-require("rotary-encoder")
+
